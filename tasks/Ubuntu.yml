@@ -1,0 +1,72 @@
+
+#check if /usr/sbin/mysqld is present
+- name: check if mysql is installed
+  stat:
+    path: /usr/sbin/mysqld
+  register: mysqld_installed
+
+- name: Install MySQL if not installed
+  apt:
+    name: mysql-server
+    state: present
+  notify: restart mysql
+  when: not mysqld_installed.stat.exists
+  tags:
+    - mysql
+
+- name: Deploy MySQL configuration
+  template:
+    src: mysqld.cnf.j2
+    dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+  notify: restart mysql
+  tags:
+    - mysql
+
+- name: Install MySQL client
+  apt:
+    name: 
+      - mysql-client
+    state: present
+  tags:
+    - mysql
+
+- name: Install MySQL Python connector
+  apt:
+    name: python3-mysqldb
+    state: present
+  tags:
+    - mysql
+
+- name: Install MySQL Python connector
+  apt:
+    name: python3-mysqldb
+    state: present
+  tags:
+    - mysql
+
+
+- name: create mysql database
+  mysql_db:
+    name: "{{mysql_db.name}}"
+    state: present
+  loop_control:
+    loop_var: mysql_db 
+  loop: "{{ mysql_dbs }}"
+  tags:
+    - mysql
+    - debug_mysql
+
+
+- name: create mysql_users
+  mysql_user:
+    name: "{{mysql_user.name}}"
+    password: "{{mysql_user.password}}"
+    host: "{{mysql_user.host}}"
+    append_privs: yes
+    priv: "{{mysql_user.privs}}" #" | join('/')}}"
+  loop: "{{ mysql_users }}"  
+  loop_control:
+    loop_var: mysql_user
+  tags:
+    - mysql
+     - debug_mysql

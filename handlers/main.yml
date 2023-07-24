@@ -1,0 +1,9 @@
+# handler for mysql service
+- name: restart mysql
+  service:
+    name: mysql
+    state: restarted
+  tags:
+    - mysql
+    - debug_mysql
+
